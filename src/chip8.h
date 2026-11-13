@@ -13,7 +13,7 @@ typedef struct {
     uint8_t sp;//stack top
     uint8_t delay_timer,sound_timer; //timers decremented at 60Hz
     bool display[32][64]; //the screen
-    bool keyboard[16]; //the keyboard 
+    uint16_t keyboard; //the keyboard 
     //and thats all :)
 }Chip8;
 
