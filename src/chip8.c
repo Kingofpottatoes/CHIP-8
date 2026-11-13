@@ -14,7 +14,7 @@ bool chip8_load_rom(Chip8 *p,const char * rom_path){
     }
     size_t result=fread(p->memory+0x200,1,4096-0x200,file);
     int bit=fgetc(file);
-    if (!(bit==feof(file))){
+    if (!(bit==EOF)){
         return false;
     }
     if (result==0){
