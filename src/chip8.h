@@ -20,4 +20,5 @@ typedef struct {
 void chip8_init(Chip8 *p);
 bool chip8_load_rom(Chip8 *p,const char *);
 void chip8_cycle(Chip8 *p);
+void chip8_display(Chip8 *p);
 #endif

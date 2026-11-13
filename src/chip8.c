@@ -45,6 +45,21 @@ bool chip8_load_rom(Chip8 *p,const char * rom_path){
     
     return true;
 }
+void chip8_display(Chip8 *p){
+    char display[32*65+1];
+    int x,y;
+    for (y=0;y<32;y++){
+        for(x=0;x<64;x++){
+            if (p->display[y][x]){
+                display[y*65+x]='#';
+            }
+            else{display[y*65 +x]=' ';}
+        }
+        display[y*65+x]='\n';
+    }
+    display[32*65]='\0';
+    printf("%s",display);
+}
 void chip8_cycle(Chip8 *p){
     //FETCH
     uint8_t instruction_one=p->memory[p->pc];
