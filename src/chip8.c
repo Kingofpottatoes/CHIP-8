@@ -44,3 +44,73 @@ bool chip8_load_rom(Chip8 *p,const char * rom_path){
     
     return true;
 }
+void chip8_cycle(Chip8 *p){
+    //FETCH
+    uint8_t instruction_one=p->memory[p->pc];
+    uint8_t instruction_two=p->memory[p->pc+1];
+    uint16_t instruction= (instruction_one<<8)|| instruction_two;
+    p->pc+=2;
+    //DECODE AND EXECUTE
+    uint8_t first_quartet=instruction & 0b1111000000000000>>12;//mask to only keep the first octet, and move it to the left for more lisibility
+    uint8_t second_quartet=instruction & 0b0000111100000000>>8;
+    uint8_t third_quartet=instruction & 0b0000000011110000>>4;
+    uint8_t last_quartet=instruction & 0b0000000000001111;
+    uint8_t two_last_quartet=instruction & 0b0000000011111111;
+    uint8_t three_last_quartet=instruction & 0b0000111111111111;
+    switch ((first_quartet)){
+        case 0x0:{
+            int i,j;
+            for (i=0;i<32;i++){
+                for (j=0;j<64;j++){
+                    p->display[i][j]=false;
+                }
+            }
+            break;
+        }
+        case 0x1:{
+            break;
+        }
+        case 0x2:{
+            break;
+        }
+        case 0x3:{
+            break;
+        }
+        case 0x4:{
+            break;
+        }
+        case 0x5:{
+            break;
+        }
+        case 0x6:{
+            break;
+        }
+        case 0x7:{
+            break;
+        }
+        case 0x8:{
+            break;
+        }
+        case 0x9:{
+            break;
+        }
+        case 0xA:{
+            break;
+        }
+        case 0xB:{
+            break;
+        }
+        case 0xC:{
+            break;
+        }
+        case 0xD:{
+            break;
+        }
+        case 0xE:{
+            break;
+        }
+        case 0xF:{
+            break;
+        }
+    }
+}
