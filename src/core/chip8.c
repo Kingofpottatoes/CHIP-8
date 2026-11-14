@@ -60,7 +60,7 @@ void chip8_display(Chip8 *p){
     display[32*65]='\0';
     printf("%s",display);
 }
-void chip8_cycle(Chip8 *p){
+bool chip8_cycle(Chip8 *p){
     //FETCH
     uint8_t instruction_one=p->memory[p->pc];
     uint8_t instruction_two=p->memory[p->pc+1];
@@ -139,14 +139,17 @@ void chip8_cycle(Chip8 *p){
                 }
                 case 1:{
                     p->V[second_quartet]=p->V[second_quartet] | p->V[third_quartet];
+                    p->V[0xF]=0;
                     break;
                 }
                 case 2:{
                     p->V[second_quartet]=p->V[second_quartet] & p->V[third_quartet];
+                    p->V[0xF]=0;
                     break;
                 }
                 case 3:{
                     p->V[second_quartet]=p->V[second_quartet] ^ p->V[third_quartet];
+                    p->V[0xF]=0;
                     break;
                 }
                 case 4:{
@@ -165,8 +168,8 @@ void chip8_cycle(Chip8 *p){
                     break;
                 }
                 case 6:{
-                    uint8_t tmp=p->V[second_quartet] & 0b0001;
-                    p->V[second_quartet]=p->V[second_quartet]>>1;
+                    uint8_t tmp=p->V[third_quartet] & 0b0001;
+                    p->V[second_quartet]=p->V[third_quartet]>>1;
                     p->V[0xF]=tmp;
                     break;
                 }
@@ -178,8 +181,8 @@ void chip8_cycle(Chip8 *p){
                     break;
                 }
                 case 14:{//CASE E
-                    uint8_t tmp=(p->V[second_quartet]>>7);
-                    p->V[second_quartet]=p->V[second_quartet]<<1;
+                    uint8_t tmp=(p->V[third_quartet]>>7);
+                    p->V[second_quartet]=p->V[third_quartet]<<1;
                     p->V[0xF]=tmp;
                     break;
                 }
@@ -226,6 +229,7 @@ void chip8_cycle(Chip8 *p){
                     }
                 }
             }
+            return true;
             break;
         }
         case 0xE:{
@@ -296,6 +300,7 @@ void chip8_cycle(Chip8 *p){
                     for (i=0;i<=second_quartet;i++){
                         p->memory[p->I+i]=p->V[i];
                     }
+                    p->I+=second_quartet+1;
                     break;
                 }
                 case 0x65:{
@@ -303,6 +308,7 @@ void chip8_cycle(Chip8 *p){
                     for (i=0;i<=second_quartet;i++){
                         p->V[i]=p->memory[p->I+i];
                     }
+                    p->I+=second_quartet+1;
                     break;
                 }
                 default:{
@@ -319,4 +325,5 @@ void chip8_cycle(Chip8 *p){
             printf("Unknow first quartet, HOW DID YOU DO THAT :%04X \n",instruction);
         }
     }
+    return false;
 }
