@@ -2,6 +2,7 @@
 CC     = gcc
 CFLAGS = -Wall -Wextra -g
 LDLIBS = -lraylib -lm
+RAYLIB_WEB = ~/Code/libs/raylib/src
 
 SRC = $(wildcard src/*.c src/*/*.c)
 OBJ = $(SRC:src/%.c=build/%.o)
@@ -15,8 +16,12 @@ build/%.o: src/%.c
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# --- Compile web version ---
+web: 
+	mkdir -p web
+	emcc $(SRC) -o web/index.html -I $(RAYLIB_WEB) $(RAYLIB_WEB)/libraylib.web.a -sUSE_GLFW=3 -sEXPORTED_RUNTIME_METHODS=ccall,FS -DPLATFORM_WEB -Os --preload-file roms --shell-file web_shell.html
 # --- Cleanup ---
-.PHONY: clean
+.PHONY: clean web
 clean:
 	rm -rf build
 	rm -f chip8
