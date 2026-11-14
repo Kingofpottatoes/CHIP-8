@@ -5,3 +5,4 @@
 void initWindow();
 void DrawOneFrame(bool [32][64]);
 uint16_t UpdateKeyboard();
+void platform_beep(bool on);

@@ -1,6 +1,8 @@
 #include <raylib.h>
 #include <stdint.h>
 
+static unsigned int audiocounter=0;
+static AudioStream Audio;
 static RenderTexture2D Screen;
 static Color black={0,0,0,255};
 static Color white={255,255,255,255};
@@ -51,6 +53,12 @@ void DrawScreen(bool display[32][64]){
 
 }
 
+void DrawOneFrame(bool display[32][64]){
+    BeginDrawing();
+    DrawScreen(display);
+    EndDrawing();
+}
+
 uint16_t UpdateKeyboard(){
     int key;
     uint16_t keyboard=0;
@@ -62,18 +70,37 @@ uint16_t UpdateKeyboard(){
     return keyboard;
 }
 
-void initWindow(){
-    InitWindow(640,320,"CHIP-8");
-    SetTargetFPS(60);
-    Screen=LoadRenderTexture(64, 32);
+void SendSound(void * buffer,unsigned int frames){
+    unsigned int i;
+    short *samples = (short *)buffer;
+    for (i=0;i<frames;i++){
+        if (audiocounter%100<50){
+            samples[i]=3000;
+        }
+        else {samples[i]=-3000;}
+        audiocounter+=1;
+    }
 }
 
-void DrawOneFrame(bool display[32][64]){
-    BeginDrawing();
-    DrawScreen(display);
-    EndDrawing();
+void platform_beep(bool on){
+    if (!IsAudioStreamPlaying(Audio)&&on){
+        PlayAudioStream(Audio);
+    }
+    else if (IsAudioStreamPlaying(Audio) && !on){
+        StopAudioStream(Audio);
+    }
+}
+void initWindow(){
+    InitWindow(640,320,"CHIP-8");
+    InitAudioDevice();
+    SetTargetFPS(60);
+    Screen=LoadRenderTexture(64, 32);
+    Audio=LoadAudioStream(44100, 16, 1);
+    SetAudioStreamCallback(Audio, SendSound);
 }
 void closeWindow(){
     UnloadRenderTexture(Screen);
+    UnloadAudioStream(Audio);
+    CloseAudioDevice();
     CloseWindow();
 }
