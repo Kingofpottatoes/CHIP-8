@@ -18,8 +18,8 @@ build/%.o: src/%.c
 
 # --- Compile web version ---
 web: 
-	mkdir -p web
-	emcc $(SRC) -o web/index.html -I $(RAYLIB_WEB) $(RAYLIB_WEB)/libraylib.web.a -sUSE_GLFW=3 -sEXPORTED_RUNTIME_METHODS=ccall,FS -DPLATFORM_WEB -Os --preload-file roms --shell-file web_shell.html
+	mkdir -p docs
+	emcc $(SRC) -o docs/index.html -I $(RAYLIB_WEB) $(RAYLIB_WEB)/libraylib.web.a -sUSE_GLFW=3 -sEXPORTED_RUNTIME_METHODS=ccall,FS -DPLATFORM_WEB -Os --preload-file roms --shell-file web_shell.html
 # --- Cleanup ---
 .PHONY: clean web
 clean:
