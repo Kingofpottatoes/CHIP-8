@@ -13,7 +13,8 @@
       --border: #2a2d38;
       --text: #e6e6e6;
       --muted: #8a8f9c;
-      --accent: #4ade80;
+      --eight: #4ade80;
+      --pressed: #4ade80;
     }
 
     * { box-sizing: border-box; }
@@ -38,7 +39,7 @@
       letter-spacing: 0.08em;
     }
 
-    h1 span { color: var(--accent); }
+    h1 span { color: var(--eight); }
 
     .screen {
       padding: 12px;
@@ -77,7 +78,10 @@
       gap: 6px;
     }
 
-    .grid span {
+    .grid button {
+      color: var(--text);
+      font: inherit;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -85,6 +89,35 @@
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 6px;
+      position: relative;
+    }
+    .grid button.pressed {
+      color: black;
+      font: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 36px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      position: relative;
+      background-color: var(--pressed) ;
+    }
+    .grid button.waiting{
+      border-color: aqua;
+    }
+    .grid button.conflict{
+      border-color: red;
+    }
+    
+    .chip {
+      position:absolute;
+      bottom: 2px;
+      right: 4px;
+      font-size: 0.55rem;
+      color: var(--muted);
     }
 
     footer {
@@ -103,12 +136,77 @@
 
   <div class="keys">
     <div class="keypad">
-      <p>QWERTY</p>
+      <p>Controls - Click a key to remap</p>
       <div class="grid">
-        <span>1</span><span>2</span><span>3</span><span>4</span>
-        <span>Q</span><span>W</span><span>E</span><span>R</span>
-        <span>A</span><span>S</span><span>D</span><span>F</span>
-        <span>Z</span><span>X</span><span>C</span><span>V</span>
+        <!-- first row -->
+        <button data-key="1">
+          <span class="chip">1</span>
+          <span class="bind">1</span>
+        </button>
+        <button data-key="2">
+          <span class="chip">2</span>
+          <span class="bind">2</span>
+        </button>
+        <button data-key="3">
+          <span class="chip">3</span>
+          <span class="bind">3</span>
+        </button>
+        <button data-key="12">
+          <span class="chip">C</span>
+          <span class="bind">4</span>
+        </button>
+        <!-- second row -->
+        <button data-key="4">
+          <span class="chip">4</span>
+          <span class="bind">Q</span>
+        </button>
+        <button data-key="5">
+          <span class="chip">5</span>
+          <span class="bind">W</span>
+        </button>
+        <button data-key="6">
+          <span class="chip">6</span>
+          <span class="bind">E</span>
+        </button>
+        <button data-key="13">
+          <span class="chip">D</span>
+          <span class="bind">R</span>
+        </button>
+        <!-- third row -->
+        <button data-key="7">
+          <span class="chip">7</span>
+          <span class="bind">A</span>
+        </button>
+        <button data-key="8">
+          <span class="chip">8</span>
+          <span class="bind">S</span>
+        </button>
+        <button data-key="9">
+          <span class="chip">9</span>
+          <span class="bind">D</span>
+        </button>
+        <button data-key="14">
+          <span class="chip">E</span>
+          <span class="bind">F</span>
+        </button>
+        <!-- fourth row -->
+        <button data-key="10">
+          <span class="chip">A</span>
+          <span class="bind">Z</span>
+        </button>
+        <button data-key="0">
+          <span class="chip">0</span>
+          <span class="bind">X</span>
+        </button>
+        <button data-key="11">
+          <span class="chip">B</span>
+          <span class="bind">C</span>
+        </button>
+        <button data-key="15">
+          <span class="chip">F</span>
+          <span class="bind">V</span>
+        </button>
+
       </div>
     </div>
   </div>
@@ -116,9 +214,84 @@
   <footer>Written in C, compiled to WebAssembly with Emscripten · powered by raylib</footer>
 
   <script>
+    let keymap = ["KeyX", "Digit1", "Digit2", "Digit3", "KeyQ", "KeyW", "KeyE", "KeyA", "KeyS", "KeyD", "KeyZ", "KeyC", "Digit4", "KeyR", "KeyF", "KeyV"];
+    let state=0;
+    let waiting=-1;
+    let ready=false;
     var Module = {
-      canvas: document.getElementById('canvas')
+      canvas: document.getElementById('canvas'),
+      onRuntimeInitialized:()=>{ready=true}
     };
+
+    function Send_keyboard(){
+      if(!ready){
+        return
+      }
+      Module.ccall("web_set_keyboard",null,["number"],[state])
+    }
+    function getButton(k){
+      return document.querySelector('[data-key="' + k + '"]')
+    }
+    window.addEventListener("keydown", (event)=>{
+      if (waiting!==-1){
+        event.preventDefault();
+        const button=getButton(waiting);
+        const j = keymap.indexOf(event.code);
+        if(j!==-1 && j!=waiting){
+           button.classList.add("conflict")
+          return
+        }
+        if (event.code=="Escape"){
+          waiting=-1;
+          button.classList.remove("waiting")
+          button.classList.remove("conflict")
+          return
+        }
+        button.querySelector(".bind").textContent = event.key.toUpperCase();
+        keymap[waiting] = event.code;
+        button.classList.remove("waiting");
+        button.classList.remove("conflict")
+        waiting=-1;
+        return
+      }
+      const k= keymap.indexOf(event.code);
+      if (k===-1){
+        return
+      }
+      event.preventDefault();
+      if (event.repeat){
+        return
+      }
+      state |= (1<<k); //light the bit
+      document.querySelector('[data-key="'+k+'"]').classList.add("pressed");
+      Send_keyboard();
+
+
+    })
+    window.addEventListener("keyup", (event)=>{
+      const k= keymap.indexOf(event.code);
+      if (k===-1){
+        return
+      }
+      event.preventDefault();
+      state &= ~(1 << k); //shut down the bit
+      document.querySelector('[data-key="'+k+'"]').classList.remove("pressed");
+      Send_keyboard();
+
+    })
+    document.querySelectorAll("[data-key]").forEach((button)=>{
+        button.addEventListener("click", ()=>{
+          const oldbutton=getButton(waiting)
+          if (waiting!==-1){
+            oldbutton.classList.remove("waiting")
+            oldbutton.classList.remove("conflict")
+          }
+          waiting=Number(button.dataset.key);
+          button.classList.add("waiting")
+          button.blur();
+
+        })
+    })
   </script>
   {{{ SCRIPT }}}
 </body>
