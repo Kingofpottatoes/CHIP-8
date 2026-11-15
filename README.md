@@ -2,7 +2,7 @@
 
 This project is a CHIP-8 emulator, living in your browser with WebAssembly
 
-**▶ [Try it in your browser](https://Kingofpottatoes.github.io/chip8/)**
+**▶ [Try it in your browser](https://kingofpottatoes.github.io/CHIP-8/)**
 
 (for Pong the keys are the two top-left keys)
 
