@@ -57,6 +57,29 @@
       outline: none;
     }
 
+    #rom-input {display:none;}
+
+    #file-selector{
+      color: var(--text);
+      font: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 36px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+    #file-selector:hover{
+      background:  var(--pressed);
+      color: black
+    }
+    #rom-input:disabled + #file-selector{
+      opacity:0,4;
+      cursor:not-allowed;
+    }
+
     .keys {
       display: flex;
       gap: 40px;
@@ -73,6 +96,7 @@
     }
 
     .grid {
+      justify-content: center;
       display: grid;
       grid-template-columns: repeat(4, 36px);
       gap: 6px;
@@ -133,6 +157,9 @@
   <div class="screen">
     <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
   </div>
+  <label id="file-selector" for="rom-input">Load ROM</label>
+  <input type="file" accept=".ch8" id="rom-input" disabled>
+  <span id="rom-name"></span>
 
   <div class="keys">
     <div class="keypad">
@@ -218,10 +245,12 @@
     let state=0;
     let waiting=-1;
     let ready=false;
+    const input = document.getElementById("rom-input");
     var Module = {
       canvas: document.getElementById('canvas'),
-      onRuntimeInitialized:()=>{ready=true}
+      onRuntimeInitialized:()=>{ready=true; input.disabled = false;}
     };
+
 
     function Send_keyboard(){
       if(!ready){
@@ -292,6 +321,19 @@
 
         })
     })
+
+    input.addEventListener("change",async () => {
+      const file= input.files[0];
+      if(!file){return}
+      const buffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      Module.FS.writeFile("/rom.ch8", bytes);
+      Module.ccall("web_load_rom", null, [], []);
+      document.getElementById("rom-name").textContent = file.name;
+      input.value = "";
+      input.blur();
+
+     })
   </script>
   {{{ SCRIPT }}}
 </body>
